@@ -22,7 +22,7 @@ root.geometry("1000x1000")
 import os
 #region = os.environ['ACCOUNT_REGION']
 #key = os.environ['ACCOUNT_KEY']
-KEY = "443006f6e047441a9185afd881359c2e"
+KEY = *****************
 ENDPOINT = "https://textgrab.cognitiveservices.azure.com/"
 
 client = ComputerVisionClient(ENDPOINT, CognitiveServicesCredentials(KEY))
