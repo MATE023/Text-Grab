@@ -3,8 +3,8 @@ import uuid
 import sys
 from azure.storage.blob import BlockBlobService, PublicAccess
 
-ACCOUNT_NAME = "wordimgstorage"
-ACCOUNT_KEY = "uDbDiTU9NxkyyqKewbPv8SPt8iSVx0kUXT/mdx+3FNdZJGBJa8DaYMe+tsXSBRQnWTfXP2pl884M+ASt690XcQ=="
+ACCOUNT_NAME = "*****************"
+ACCOUNT_KEY = "************************"
 
 block_blob_service = BlockBlobService(
     account_name=ACCOUNT_NAME, account_key=ACCOUNT_KEY)
