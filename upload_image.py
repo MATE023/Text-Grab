@@ -1,5 +1,5 @@
 from github import Github
-g = Github("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")
+g = Github("*******************************")
 
 repo = g.get_user().get_repo("image")
 files = []
