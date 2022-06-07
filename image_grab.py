@@ -2,10 +2,10 @@ import sys
 import time
 
 from upload_image import upload_image
+from upload_image_a import upload_file
 
 from tkinter import *
 import tkinter as tk
-#import pyscreenshot as ImageGrab
 import pyperclip as pc
 from PIL import Image, ImageGrab
 
@@ -22,8 +22,11 @@ root.geometry("1000x1000")
 import os
 #region = os.environ['ACCOUNT_REGION']
 #key = os.environ['ACCOUNT_KEY']
-KEY = *****************
-ENDPOINT = "https://textgrab.cognitiveservices.azure.com/"
+KEY = "************************"
+ENDPOINT = "****************************"
+conn_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+container_name = "words"
+blob_name = "image.png"
 
 client = ComputerVisionClient(ENDPOINT, CognitiveServicesCredentials(KEY))
 
@@ -52,54 +55,52 @@ def getY(eventextenty):
     c.bind("<Button 1>",copy_text)
 
 def copy_text(event):
-    #xmpx = xE - x0
-    #ympx = yE - y0
-    
-    text = ""
-    
-    
+    text = ""  
     c.create_rectangle(
         x0, y0, xE, yE,
         outline="#fb0",
         fill="#FFF")
     print(x0, y0, xE, yE)
     
-    image = ImageGrab.grab(bbox=(x0+180, y0+24, xE+180, yE+24))
-    print(x0, y0, xE, yE)
+    image = ImageGrab.grab(bbox=(x0+180, y0+25, xE+180, yE+25)) 
+
     image.save("image.png")
     #TODO: Set image file name
-    upload_image("image.png")
+    upload_file("image.png")
     
+    
+    with open(os.path.dirname(os.path.abspath("image.png")) + "\image.png", "rb") as img_str:
+        cl = client.recognize_printed_text_in_stream(
+            image=img_str,
+            language="en"
+        )
+    
+    text = cl.regions[0].lines
+    for t in text:
+        line_t = " ".join([word.text for word in t.words])
+        print(line_t)
+    #----------------------------------------------------------------------------
     #imageURL = "https://github.com/Azure-Samples/cognitive-services-python-sdk-samples/raw/master/samples/vision/images/make_things_happen.jpg"
-    #imageURL = "https://kiosk-dot-codelabs-site.appspot.com/codelabs/mobile-vision-ocr/img/c5134dae01ad22a5.png"    
-    imageURL = "https://github.com/mateooos/image/blob/main/imagefolder/image.png?raw=true"
-    #imageURL = "https://github.com/mateooos/image/blob/main/imagefolder/image.png?raw=true"
+    #numberOfCharsInOperationId = 36
     
-    numberOfCharsInOperationId = 36
-    
-    readT = client.read(imageURL, raw = True)
-    opLocation = readT.headers["Operation-Location"]
-    id_ = opLocation.split("/")[-1]
+    #readT = client.read(imageURL, raw = True)
+    #opLocation = readT.headers["Operation-Location"]
+    #id_ = opLocation.split("/")[-1]
 
-    while True:
-        readR = client.get_read_result(id_)
-        if readR.status not in ['notStarted', 'running']:
-            break
-        time.sleep(1)
+    #while True:
+    #    readR = client.get_read_result(id_)
+    #    if readR.status not in ['notStarted', 'running']:
+    #        break
+    #    time.sleep(1)
         
-    if readR.status == OperationStatusCodes.succeeded:
-        for tResult in readR.analyze_result.read_results:
-            for line in tResult.lines:
-                print(line.text)
-                text += line.text
-                
-    pc.copy(text)
-    #changeText(readR)
+    #if readR.status == OperationStatusCodes.succeeded:
+    #    for tResult in readR.analyze_result.read_results:
+    #        for line in tResult.lines:
+    #            print(line.text)
+    #            text += line.text
+    #-----------------------------------------------------------------------------
     
-    #print("Origin: ", x0, y0)
-    #print("Finish: ", xE, yE)
-    #print(xmpx, ympx)
-    #print(readR)
+    pc.copy(line_t)
     
 def changeText(newText):
     c.create_text(100, 10, fill="darkblue", font="Times 20 italic bold", text=newText)
