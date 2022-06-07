@@ -49,9 +49,9 @@ def getX(eventextentx):
 def getY(eventextenty):
     global yE
     yE = eventextenty.y
-    c.bind("<Button 1>",printcoords)
+    c.bind("<Button 1>",copy_text)
 
-def printcoords(event):
+def copy_text(event):
     #xmpx = xE - x0
     #ympx = yE - y0
     
