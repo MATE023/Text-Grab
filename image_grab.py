@@ -1,5 +1,8 @@
+import os
 import sys
 import time
+import mss
+import mss.tools
 
 from upload_image import upload_image
 from upload_image_a import upload_file
@@ -8,6 +11,8 @@ from tkinter import *
 import tkinter as tk
 import pyperclip as pc
 from PIL import Image, ImageGrab
+import numpy as np
+
 
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
@@ -17,9 +22,8 @@ from msrest.authentication import CognitiveServicesCredentials
 root = Tk()
 root.attributes('-alpha',0.5)
 root.geometry("1000x1000")
+root.state('zoomed')
 
-
-import os
 #region = os.environ['ACCOUNT_REGION']
 #key = os.environ['ACCOUNT_KEY']
 KEY = "************************"
@@ -37,36 +41,59 @@ c.create_text(100, 10, fill="darkblue", font="Times 20 italic bold", text="TEXT 
 c.update
 
 def origin(eventorigin):
-    global x0, y0
+    #c.delete("all")
+    global x0, y0 
     x0 = eventorigin.x
     y0 = eventorigin.y
     c.bind("<Button 1>",getX)
     
-c.bind("<Button 1>",origin)
+#c.bind("<Button 1>",origin)
     
 def getX(eventextentx):
     global xE
     xE = eventextentx.x
+    if(xE > screen_width):
+        xE = screen_width
     c.bind("<Button 1>",getY)
     
 def getY(eventextenty):
     global yE
     yE = eventextenty.y
+    if(yE > screen_height):
+        yE = screen_height
     c.bind("<Button 1>",copy_text)
 
 def copy_text(event):
-    text = ""  
+    copied_text = ""  
     c.create_rectangle(
         x0, y0, xE, yE,
         outline="#fb0",
         fill="#FFF")
     print(x0, y0, xE, yE)
     
-    image = ImageGrab.grab(bbox=(x0+180, y0+25, xE+180, yE+25)) 
-
-    image.save("image.png")
+    with mss.mss() as sct:
+        box = {"top": x0, "left": y0, "width": xE-x0, "height": yE-y0}
+        output = "image.png"
+        
+        image = sct.grab(box)
+        
+        mss.tools.to_png(image.rgb, image.size, output=output)
+    
+    #------------------------------------------------------------------
+    #image = ImageGrab.grab(bbox=(x0+180, y0+25, xE+180, yE+25))
+    #i = np.asarray(image)
+    #image = ImageGrab.grab(bbox=(x0, y0, xE, yE))
+    #------------------------
+    #image.save("image.png")
+    #------------------------
+    #Doesn't get here in tile extended outside image case
+    #im = Image.fromarray(i)
+    #im.tile = [i for i in im.tile if i[1][2] < 2181 and i[1][3]<1294]
+    #im.save("im.png")
+    #-------------------------------------------------------------------
     #TODO: Set image file name
     upload_file("image.png")
+    
     
     
     with open(os.path.dirname(os.path.abspath("image.png")) + "\image.png", "rb") as img_str:
@@ -78,30 +105,16 @@ def copy_text(event):
     text = cl.regions[0].lines
     for t in text:
         line_t = " ".join([word.text for word in t.words])
+        copied_text += line_t
         print(line_t)
-    #----------------------------------------------------------------------------
-    #imageURL = "https://github.com/Azure-Samples/cognitive-services-python-sdk-samples/raw/master/samples/vision/images/make_things_happen.jpg"
-    #numberOfCharsInOperationId = 36
-    
-    #readT = client.read(imageURL, raw = True)
-    #opLocation = readT.headers["Operation-Location"]
-    #id_ = opLocation.split("/")[-1]
 
-    #while True:
-    #    readR = client.get_read_result(id_)
-    #    if readR.status not in ['notStarted', 'running']:
-    #        break
-    #    time.sleep(1)
-        
-    #if readR.status == OperationStatusCodes.succeeded:
-    #    for tResult in readR.analyze_result.read_results:
-    #        for line in tResult.lines:
-    #            print(line.text)
-    #            text += line.text
-    #-----------------------------------------------------------------------------
+    pc.copy(copied_text)
     
-    pc.copy(line_t)
+    c.bind("<Button 1>", origin)
     
+    
+c.bind("<Button 1>", origin)
+
 def changeText(newText):
     c.create_text(100, 10, fill="darkblue", font="Times 20 italic bold", text=newText)
     c.update
