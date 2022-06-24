@@ -40,6 +40,9 @@ c.pack()
 c.create_text(100, 10, fill="darkblue", font="Times 20 italic bold", text="TEXT GRAB")
 c.update
 
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
 def origin(eventorigin):
     #c.delete("all")
     global x0, y0 
