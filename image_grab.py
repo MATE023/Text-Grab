@@ -18,6 +18,7 @@ from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
+from azure.cognitiveservices.vision.computervision.models import OcrLine, OcrWord
 
 root = Tk()
 root.attributes('-alpha',0.5)
@@ -40,30 +41,54 @@ c.pack()
 c.create_text(100, 10, fill="darkblue", font="Times 20 italic bold", text="TEXT GRAB")
 c.update
 
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+print("sw", screen_width, "sh", screen_height)
+
 def origin(eventorigin):
     #c.delete("all")
     global x0, y0 
     x0 = eventorigin.x
     y0 = eventorigin.y
-    c.bind("<Button 1>",getX)
+    #print("x0", x0, "y0", y0)
+    #c.bind("<Button 1>",getX)
+    root.bind('<Double-Button-1>', callback0)
     
 #c.bind("<Button 1>",origin)
     
-def getX(eventextentx):
-    global xE
-    xE = eventextentx.x
-    if(xE > screen_width):
-        xE = screen_width
-    c.bind("<Button 1>",getY)
-    
-def getY(eventextenty):
-    global yE
-    yE = eventextenty.y
-    if(yE > screen_height):
-        yE = screen_height
-    c.bind("<Button 1>",copy_text)
+def callback0(e):
+    global x0
+    global y0
+    x0 = e.x
+    y0 = e.y
+    print("1", x0, y0)
+    root.bind('<Double-Button-1>', callbackE)
+   
 
-def copy_text(event):
+def callbackE(e):
+    global xE
+    global yE
+    xE = e.x
+    yE = e.y
+    print("2", xE, yE)
+    copy_text()
+    
+
+def createImage():
+    with mss.mss() as sct:
+        #       height       width
+        box = {"top": y0+24, "left": x0+181, "width": abs(xE-x0), "height": abs(yE-y0)}
+        #      + to push down  + to push right
+
+        output = "image.png"
+        
+        image = sct.grab(box)
+        
+        mss.tools.to_png(image.rgb, image.size, output=output)
+            
+    upload_file("image.png")
+
+def copy_text():
     copied_text = ""  
     c.create_rectangle(
         x0, y0, xE, yE,
@@ -71,49 +96,36 @@ def copy_text(event):
         fill="#FFF")
     print(x0, y0, xE, yE)
     
-    with mss.mss() as sct:
-        box = {"top": x0, "left": y0, "width": xE-x0, "height": yE-y0}
-        output = "image.png"
+    #if(abs(xE-x0) >= 50 and abs(yE-y0) >= 50):
         
-        image = sct.grab(box)
-        
-        mss.tools.to_png(image.rgb, image.size, output=output)
-    
-    #------------------------------------------------------------------
-    #image = ImageGrab.grab(bbox=(x0+180, y0+25, xE+180, yE+25))
-    #i = np.asarray(image)
-    #image = ImageGrab.grab(bbox=(x0, y0, xE, yE))
-    #------------------------
-    #image.save("image.png")
-    #------------------------
-    #Doesn't get here in tile extended outside image case
-    #im = Image.fromarray(i)
-    #im.tile = [i for i in im.tile if i[1][2] < 2181 and i[1][3]<1294]
-    #im.save("im.png")
-    #-------------------------------------------------------------------
-    #TODO: Set image file name
-    upload_file("image.png")
-    
-    
-    
+    createImage()
+
     with open(os.path.dirname(os.path.abspath("image.png")) + "\image.png", "rb") as img_str:
         cl = client.recognize_printed_text_in_stream(
             image=img_str,
             language="en"
         )
     
-    text = cl.regions[0].lines
+    if(len(cl.regions) > 0):
+        text = cl.regions[0].lines
+    else:
+        words = OcrWord(bounding_box = "", text="No text detected.")
+        text = [OcrLine(bounding_box = "", words=[words])]
+    
     for t in text:
         line_t = " ".join([word.text for word in t.words])
         copied_text += line_t
         print(line_t)
-
+                
+        #else:
+            #print("Image must be atleast 50x50 pixels")
+    
     pc.copy(copied_text)
     
-    c.bind("<Button 1>", origin)
+    root.bind('<Double-Button-1>', origin)
     
-    
-c.bind("<Button 1>", origin)
+root.bind('<Double-Button-1>', origin)
+
 
 def changeText(newText):
     c.create_text(100, 10, fill="darkblue", font="Times 20 italic bold", text=newText)
