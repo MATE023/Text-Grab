@@ -25,8 +25,6 @@ root.attributes('-alpha',0.5)
 root.geometry("1000x1000")
 root.state('zoomed')
 
-#region = os.environ['ACCOUNT_REGION']
-#key = os.environ['ACCOUNT_KEY']
 KEY = "************************"
 ENDPOINT = "****************************"
 conn_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
@@ -43,25 +41,20 @@ c.update
 
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-print("sw", screen_width, "sh", screen_height)
 
 def origin(eventorigin):
-    #c.delete("all")
     global x0, y0 
     x0 = eventorigin.x
     y0 = eventorigin.y
-    #print("x0", x0, "y0", y0)
-    #c.bind("<Button 1>",getX)
+
     root.bind('<Double-Button-1>', callback0)
     
-#c.bind("<Button 1>",origin)
     
 def callback0(e):
     global x0
     global y0
     x0 = e.x
     y0 = e.y
-    print("1", x0, y0)
     root.bind('<Double-Button-1>', callbackE)
    
 
@@ -70,7 +63,6 @@ def callbackE(e):
     global yE
     xE = e.x
     yE = e.y
-    print("2", xE, yE)
     copy_text()
     
 
@@ -94,10 +86,7 @@ def copy_text():
         x0, y0, xE, yE,
         outline="#fb0",
         fill="#FFF")
-    print(x0, y0, xE, yE)
-    
-    #if(abs(xE-x0) >= 50 and abs(yE-y0) >= 50):
-        
+           
     createImage()
 
     with open(os.path.dirname(os.path.abspath("image.png")) + "\image.png", "rb") as img_str:
@@ -117,8 +106,6 @@ def copy_text():
         copied_text += line_t
         print(line_t)
                 
-        #else:
-            #print("Image must be atleast 50x50 pixels")
     
     pc.copy(copied_text)
     
