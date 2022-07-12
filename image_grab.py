@@ -4,7 +4,6 @@ import time
 import mss
 import mss.tools
 
-from upload_image import upload_image
 from upload_image_a import upload_file
 
 from tkinter import *

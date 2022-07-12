@@ -16,9 +16,7 @@ block_blob_service.set_container_acl(
 
 def upload_file(filename):
     try:
-        #local_path = os.path.expanduser("~\Image")
         local_path = os.getcwd()
-        #print(local_path)
         if not os.path.exists(local_path):
             os.makedirs(os.path.expanduser("~\Image"))
         full_path = os.path.join(local_path, filename)
