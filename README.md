@@ -6,5 +6,3 @@ Application to grab pieces of the screen to copy text can't otherwise be copied.
 ![My Image](images/Demonstration2.png)
 
 ![My Image](images/Demonstration3.png)
-
-<img src="/images/Demonstration1.png" alt="Alt text" title="Optional title">
